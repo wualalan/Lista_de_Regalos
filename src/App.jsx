@@ -19,6 +19,10 @@ function App() {
 
     async function loadGifts() {
       try {
+        // Referencia de la consulta directa a Supabase:
+        // const { data, error } = await supabase
+        //   .from('regalos')
+        //   .select('*');
         const data = await fetchGifts();
         if (active) {
           setGifts(data);
