@@ -1,5 +1,5 @@
 import { initialGifts } from '../data/gifts';
-import { supabase } from '../supabaseClient';
+import { isSupabaseConfigured, supabase } from '../supabaseClient';
 
 const TABLE_NAME = 'regalos';
 const API_BASE_URL = 'supabase';
@@ -29,13 +29,18 @@ function mergeGiftWithReservation(gift, reservation) {
 }
 
 export async function fetchGifts() {
+  if (!isSupabaseConfigured || !supabase) {
+    return initialGifts;
+  }
+
   const { data, error } = await supabase
     .from(TABLE_NAME)
     .select('id, reservado_por, disponible')
     .order('id', { ascending: true });
 
   if (error) {
-    throw error;
+    console.error('No se pudo leer Supabase, usando lista local.', error);
+    return initialGifts;
   }
 
   const reservationsById = new Map(
@@ -51,6 +56,12 @@ export async function fetchGifts() {
 }
 
 export async function updateGiftReservation(giftId, payload) {
+  if (!isSupabaseConfigured || !supabase) {
+    throw new Error(
+      'Supabase no está configurado. Define VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.',
+    );
+  }
+
   const dbPayload = {
     reservado_por: payload.status === 'reserved' ? payload.reservedBy : null,
     disponible: payload.status !== 'reserved',
