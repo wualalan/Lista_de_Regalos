@@ -7,7 +7,7 @@ const API_BASE_URL = 'supabase';
 function mapDbRowToReservation(row) {
   return {
     id: row.id,
-    status: row.disponible === false ? 'reserved' : 'available',
+    status: row.esta_reservado ? 'reserved' : 'available',
     reservedBy: row.reservado_por ?? '',
   };
 }
@@ -35,7 +35,7 @@ export async function fetchGifts() {
 
   const { data, error } = await supabase
     .from(TABLE_NAME)
-    .select('id, reservado_por, disponible')
+    .select('id, nombre, reservado_por, esta_reservado')
     .order('id', { ascending: true });
 
   if (error) {
@@ -58,24 +58,27 @@ export async function fetchGifts() {
 export async function updateGiftReservation(giftId, payload) {
   if (!isSupabaseConfigured || !supabase) {
     throw new Error(
-      'Supabase no está configurado. Define VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.',
+      'Supabase no esta configurado. Define VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.',
     );
   }
 
   const dbPayload = {
     reservado_por: payload.status === 'reserved' ? payload.reservedBy : null,
-    disponible: payload.status !== 'reserved',
+    esta_reservado: payload.status === 'reserved',
   };
 
   const { data, error } = await supabase
     .from(TABLE_NAME)
     .update(dbPayload)
     .eq('id', giftId)
-    .select('id, reservado_por, disponible')
+    .select('id, nombre, reservado_por, esta_reservado')
     .single();
 
   if (error) {
-    throw error;
+    throw new Error(
+      error.message ||
+        'Supabase rechazo la actualizacion. Revisa la tabla regalos y las politicas RLS.',
+    );
   }
 
   const reservation = mapDbRowToReservation(data);
