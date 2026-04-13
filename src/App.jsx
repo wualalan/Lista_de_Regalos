@@ -2,27 +2,28 @@ import { useEffect, useMemo, useState } from 'react';
 import { fetchGifts, updateGiftReservation } from './services/giftApi';
 
 const filters = ['Todos', 'Disponibles', 'Reservados'];
+const NAME_STORAGE_KEY = 'gift-list-name';
 
 function App() {
   const [gifts, setGifts] = useState([]);
   const [selectedFilter, setSelectedFilter] = useState('Todos');
   const [search, setSearch] = useState('');
   const [selectedGift, setSelectedGift] = useState(null);
-  const [name, setName] = useState('');
+  const [name, setName] = useState(() => localStorage.getItem(NAME_STORAGE_KEY) ?? '');
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState(null);
   const [error, setError] = useState('');
   const [carouselIndex, setCarouselIndex] = useState(0);
 
   useEffect(() => {
+    localStorage.setItem(NAME_STORAGE_KEY, name);
+  }, [name]);
+
+  useEffect(() => {
     let active = true;
 
     async function loadGifts() {
       try {
-        // Referencia de la consulta directa a Supabase:
-        // const { data, error } = await supabase
-        //   .from('regalos')
-        //   .select('*');
         const data = await fetchGifts();
         if (active) {
           setGifts(data);
@@ -117,6 +118,19 @@ function App() {
   }
 
   async function handleRelease(gift) {
+    const currentName = name.trim().toLowerCase();
+    const reservedBy = gift.reservedBy.trim().toLowerCase();
+
+    if (!currentName) {
+      setError('Escribe tu nombre para intentar liberar tu reserva.');
+      return;
+    }
+
+    if (currentName !== reservedBy) {
+      setError(`Solo ${gift.reservedBy} puede liberar este regalo.`);
+      return;
+    }
+
     setError('');
     setSavingId(gift.id);
 
@@ -269,6 +283,9 @@ function App() {
             filteredGifts.map((gift) => {
               const isReserved = gift.status === 'reserved';
               const isSaving = savingId === gift.id;
+              const canRelease =
+                isReserved &&
+                name.trim().toLowerCase() === gift.reservedBy.trim().toLowerCase();
 
               return (
                 <article
@@ -293,11 +310,14 @@ function App() {
                     <p>{gift.description}</p>
 
                     <div className="gift-footer">
-                      <small>
-                        {isReserved
-                          ? `Reservado por ${gift.reservedBy}`
-                          : gift.sourceLabel || 'Disponible para apartar'}
-                      </small>
+                      {isReserved ? (
+                        <div className="reserved-by-block">
+                          <span>Reservado por</span>
+                          <strong>{gift.reservedBy}</strong>
+                        </div>
+                      ) : (
+                        <small>{gift.sourceLabel || 'Disponible para apartar'}</small>
+                      )}
 
                       {isReserved ? (
                         <button
@@ -307,9 +327,18 @@ function App() {
                             event.stopPropagation();
                             handleRelease(gift);
                           }}
-                          disabled={isSaving}
+                          disabled={isSaving || !canRelease}
+                          title={
+                            canRelease
+                              ? 'Liberar reserva'
+                              : `Solo ${gift.reservedBy} puede liberar este regalo`
+                          }
                         >
-                          {isSaving ? 'Liberando...' : 'Liberar'}
+                          {isSaving
+                            ? 'Liberando...'
+                            : canRelease
+                              ? 'Liberar'
+                              : 'Solo quien reservó puede liberar'}
                         </button>
                       ) : (
                         <button

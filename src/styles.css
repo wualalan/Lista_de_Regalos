@@ -387,11 +387,32 @@ button {
   padding: 0.8rem 1rem;
   border-radius: 14px;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 .gift-footer .ghost {
   background: rgba(31, 138, 134, 0.12);
   color: var(--teal);
+}
+
+.reserved-by-block {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.reserved-by-block span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.reserved-by-block strong {
+  font-size: 1.35rem;
+  line-height: 1.1;
+  color: var(--accent-strong);
+  word-break: break-word;
 }
 
 .source-link {
@@ -448,6 +469,7 @@ button {
   .layout {
     width: min(100% - 1rem, 100%);
     padding-top: 1rem;
+    padding-bottom: 2rem;
   }
 
   .hero,
@@ -474,5 +496,85 @@ button {
 
   .hero h1 {
     font-size: 3rem;
+  }
+
+  .hero-copy,
+  .hero-card,
+  .toolbar,
+  .gift-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .carousel-slide {
+    height: 240px;
+  }
+
+  .gift-image {
+    min-height: 210px;
+  }
+
+  .gift-content h3 {
+    font-size: 1.25rem;
+  }
+
+  .gift-footer {
+    gap: 0.85rem;
+  }
+
+  .gift-footer button {
+    width: 100%;
+  }
+
+  .reserved-by-block strong {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .layout {
+    width: calc(100% - 0.75rem);
+  }
+
+  .hero-copy,
+  .hero-card {
+    padding: 1.1rem;
+  }
+
+  .hero h1 {
+    font-size: 2.45rem;
+  }
+
+  .hero p,
+  .hero-card p,
+  .gift-content p {
+    font-size: 0.97rem;
+  }
+
+  .stats-grid article {
+    padding: 0.85rem;
+  }
+
+  .stats-grid strong {
+    font-size: 1.6rem;
+  }
+
+  .filter-group {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .filter-group button,
+  .search-box input,
+  .name-input input {
+    width: 100%;
+  }
+
+  .gift-grid {
+    gap: 0.9rem;
+  }
+
+  .gift-card {
+    border-radius: 20px;
   }
 }
